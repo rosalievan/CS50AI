@@ -3,8 +3,8 @@ Tic Tac Toe Player
 """
 
 import math
-import numpy as np
 import copy
+import numpy as np
 
 X = "X"
 O = "O"
@@ -24,12 +24,7 @@ def player(board):
     """
     Returns player who has the next turn on a board.
     """
-    flat_board = []
-    for list in board:
-        for item in list:
-            flat_board.append(item)
-
-    print(flat_board)
+    flat_board = [item for sublist in board for item in sublist]
 
     xcount = flat_board.count('X')
     ocount = flat_board.count('O')
@@ -44,28 +39,26 @@ def actions(board):
     """
     Returns set of all possible actions (i, j) available on the board.
     """
-    actionset = set()
-    for i in range(len(board)):
-        for j in range(len(board[0])):
-            tuple = (i, j)
-            if board[i][j] == EMPTY:
-                actionset.add(tuple)
-    return actionset
+    actions = set()
+    for i in range(3):
+        for j in range(3):
+            action = (i,j)
+            if  board[i][j] == EMPTY:
+                actions.add(action)
+    return actions
 
 
 def result(board, action):
     """
     Returns the board that results from making move (i, j) on the board.
     """
-    if not action in actions(board):
-        raise Exception('sorry, that action is not available')
-    newboard = copy.deepcopy(board)
-    newboard[action[0]][action[1]] = player(board)
+    if action not in actions(board):
+        raise Exception ('not a valid action')
+    boardcopy = copy.deepcopy(board)
+    boardcopy[action[0]][action[1]] = player(board)
+    return boardcopy
 
-    return newboard
 
-
-                
 def checkRows(board):
     for row in board:
         if len(set(row)) == 1:
@@ -90,16 +83,35 @@ def winner(board):
 
     return checkDiagonals(board)
 
+# def winner(board):
+#     """
+#     Returns the winner of the game, if there is one.
+#     """
+#     for i in range(3):
+#         if len(set(board[i])) == 1:
+#             return board[i][0]
+#         transposed_board = np.transpose(board)
+#         print(transposed_board)
+#         if len(set(transposed_board[i])) == 1:
+#             return board[i][0]
+    
+#     if len(set([r[i] for i, r in enumerate(board)])) == 1:
+#         return board[1][1]
+    
+#     if len(set([r[-i-1] for i, r in enumerate(board)])) == 1:
+#         return board [1][1]
+    
+#     return None    
+    
+
 
 def terminal(board):
     """
     Returns True if game is over, False otherwise.
     """
-
     if len(actions(board)) == 0:
         return True
     return False
-
 
 
 def utility(board):
@@ -108,7 +120,7 @@ def utility(board):
     """
     if winner(board) == 'X':
         return 1
-    elif winner(board) == 'O':
+    if winner(board) == 'O':
         return -1
     return 0
 
@@ -117,52 +129,52 @@ def minimax(board):
     """
     Returns the optimal action for the current player on the board.
     """
+
     if terminal(board):
         return None
 
-    playerturn = player(board)
-    if playerturn == 'X':
+    if player(board) == 'X':
+        final_action = None
         value = -math.inf
-        finalaction = None
-
         for action in actions(board):
-            min_val = min_action(result(board, action))
+            result_value = min_value(result(board, action))
+            if result_value > value:
+                final_action = action
+                value = result_value
 
-            if min_val > value:
-                value = min_val
-                finalaction = action
+        return final_action
 
-        return finalaction
-
-    if playerturn == 'O':
+    if player(board) == 'O':
+        final_action = None
         value = math.inf
-        finalaction = None
-
         for action in actions(board):
-            max_val = max_action(result(board, action))
-
-            if max_val < value:
-                value = max_val
-                finalaction = action
-        return finalaction
-
+            result_value = max_value(result(board, action))
+            if result_value < value:
+                final_action = action
+                value = result_value
+        return final_action
 
 
-def min_action(board):
 
+def max_value(board):
+    value = -math.inf
     if terminal(board):
         return utility(board)
 
-    max_value = math.inf
-    for action in actions(board):
-        max_value = min(max_value, max_action(result(board, action)))
-    return max_value
+    if actions(board):
+        for action in actions(board):
+            value = max(value, min_value(result(board, action)))
+    
+    return value
 
-def max_action(board):
+def min_value(board):
+    value = math.inf
     if terminal(board):
         return utility(board)
 
-    min_value = -math.inf
-    for action in actions(board):
-        min_value = max(min_value, min_action(result(board, action)))
-    return min_value
+    if actions(board):
+        for action in actions(board):
+            value = min(value, max_value(result(board, action)))
+
+    return value
+    
