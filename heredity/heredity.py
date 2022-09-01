@@ -140,19 +140,62 @@ def joint_probability(people, one_gene, two_genes, have_trait):
         * everyone not in set` have_trait` does not have the trait.
     """
     joint_probability = 1
-    no_gene = 1
-    one_gene = 1
-    two_genes = 1
 
-    have_trait = 1
-    have_no_trait = 1
+    def person_check(person):
+        if person in one_gene and person in have_trait:
+            return [1, True]
+        if person in one_gene and person not in have_trait:
+            return [1, False]
+        if person in two_genes and person in have_trait:
+            return [2, True]
+        if person in two_genes and person not in have_trait:
+            return [2, False]
+        if person in have_trait:
+            return [0, True]
+        return [0, False]
 
     for person in people:
-        if person in no_gene and person in have_trait:
-            if person.father == None and person.mother == None:
-                p_no_gene = PROBS["gene"][0]
-                p_have_trait_no_gene = PROBS["trait"][0][True]
-                joint_probability *= p_no_gene * p_have_trait_no_gene
+
+        fathers_group = person_check(person.father)
+        p_gene_from_father = 0
+        if person.father != None:          
+            if fathers_group[0] == 0:
+                p_gene_from_father = 0.01
+            if fathers_group[0] == 1:
+                p_gene_from_father = 0.5
+            if fathers_group[0] == 2:
+                p_gene_from_father = 0.99
+            else: 
+                p_gene_from_father = PROBS["gene"][own_group[0]]
+
+        mothers_group = person_check(person.mother)
+        p_gene_from_mother = 0
+        if person.mother != None:   
+            if mothers_group[0] == 0:
+                p_gene_from_mother = 0.01
+            if mothers_group[0] == 1:
+                p_gene_from_mother = 0.5
+            if mothers_group[0] == 2:
+                p_gene_from_mother = 0.99
+        else:
+            p_gene_from_mother = PROBS["gene"][own_group[0]]
+
+        own_group = person_check(person)       
+        p_gene_group = 0
+        if own_group[0] == 0:
+            p_gene_group = (1 - p_gene_from_father) * (1- p_gene_from_mother)
+        if own_group[0] == 1:
+            p_gene_group = (1- p_gene_from_mother) * p_gene_from_father + (1 - p_gene_from_father) * p_gene_from_mother
+        if own_group[0] == 2:
+            p_gene_group = p_gene_from_father * p_gene_from_mother
+
+        p_trait_group = PROBS["trait"][own_group[0]][own_group[1]]
+
+        joint_probability *= (p_gene_group * p_trait_group)
+
+    return joint_probability
+
+
 
 
             
