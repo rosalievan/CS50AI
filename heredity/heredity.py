@@ -127,21 +127,6 @@ def powerset(s):
         )
     ]
 
-def person_check(person, one_gene, two_genes, have_trait):
-    if person in one_gene and person in have_trait:
-        return [1, True]
-    elif person in one_gene and person not in have_trait:
-        return [1, False]
-    elif person in two_genes and person in have_trait:
-        return [2, True]
-    elif person in two_genes and person not in have_trait:
-        return [2, False]
-    elif person in have_trait:
-        return [0, True]
-    else:
-        return [0, False]
-
-
 def joint_probability(people, one_gene, two_genes, have_trait):
     """
     Compute and return a joint probability.
@@ -154,42 +139,37 @@ def joint_probability(people, one_gene, two_genes, have_trait):
         * everyone not in set` have_trait` does not have the trait.
     """
     joint_probability = 1
-
     gene_from_parent = [0.01, 0.5, 0.99]
+
     for person in people:
+        person_genes = (2 if person in two_genes else 1 if person in one_gene else 0)
+        person_trait = person in have_trait
 
+        father = people[person]["father"]
         p_gene_from_father = 0
-        p_gene_not_from_father = 0
-        if people[person]["father"]:
-            fathers_group = person_check(people[person]["father"], one_gene, two_genes, have_trait)
-            p_gene_from_father = gene_from_parent[fathers_group[0]] 
-            p_gene_not_from_father = (1 - p_gene_from_father)    
-        else: 
-            p_gene_from_father = PROBS["gene"][own_group[0]]
-            p_gene_not_from_father = 1 - p_gene_from_father
-
-        
+        mother = people[person]['mother']
         p_gene_from_mother = 0
-        p_gene_not_from_mother = 0
-        if people[person]["mother"]:
-            mothers_group = person_check(people[person]["mother"], one_gene, two_genes, have_trait)  
-            p_gene_from_mother = gene_from_parent[mothers_group[0]]
-            p_gene_not_from_mother = (1-p_gene_from_mother)
-        else:
-            p_gene_from_mother = PROBS["gene"][own_group[0]]
-            p_gene_not_from_mother = 1 - p_gene_from_mother
 
-        own_group = person_check(person, one_gene, two_genes, have_trait)       
         p_gene_group = 1
 
-        if own_group[0] == 0:
-            p_gene_group *= p_gene_not_from_father * p_gene_not_from_mother
-        if own_group[0] == 1:
-            p_gene_group *= p_gene_not_from_mother * p_gene_from_father + p_gene_not_from_father * p_gene_from_mother
-        if own_group[0] == 2:
-            p_gene_group *= p_gene_from_father * p_gene_from_mother
+        if father and mother:
+            fathers_gene = (2 if father in two_genes else 1 if father in one_gene else 0)
+            mothers_gene= (2 if mother in two_genes else 1 if mother in one_gene else 0)
 
-        p_trait_group = PROBS["trait"][own_group[0]][own_group[1]]
+            p_gene_from_father = gene_from_parent[fathers_gene]
+            p_gene_from_mother = gene_from_parent[mothers_gene]
+
+            if person_genes == 0:
+                p_gene_group *= (1 - p_gene_from_father) * (1 - p_gene_from_mother)
+            if person_genes == 1:
+                p_gene_group *= (1 - p_gene_from_mother) * p_gene_from_father + (1 - p_gene_from_father) * p_gene_from_mother
+            if person_genes == 2:
+                p_gene_group *= p_gene_from_father * p_gene_from_mother
+
+        else: 
+            p_gene_group = PROBS["gene"][person_genes]
+             
+        p_trait_group = PROBS["trait"][person_genes][person_trait]
 
         joint_probability *= (p_gene_group * p_trait_group)
 
@@ -204,9 +184,11 @@ def update(probabilities, one_gene, two_genes, have_trait, p):
     the person is in `have_gene` and `have_trait`, respectively.
     """
     for person in probabilities:
-        group = person_check(person, one_gene, two_genes, have_trait)
-        probabilities[person]["gene"][group[0]] += p
-        probabilities[person]["trait"][group[1]] += p
+        person_genes = (2 if person in two_genes else 1 if person in one_gene else 0)
+        person_trait = person in have_trait  
+
+        probabilities[person]["gene"][person_genes] += p
+        probabilities[person]["trait"][person_trait] += p
 
 
 def normalize(probabilities):
