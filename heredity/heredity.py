@@ -146,9 +146,7 @@ def joint_probability(people, one_gene, two_genes, have_trait):
         person_trait = person in have_trait
 
         father = people[person]["father"]
-        p_gene_from_father = 0
         mother = people[person]['mother']
-        p_gene_from_mother = 0
 
         p_gene_group = 1
 
@@ -190,29 +188,22 @@ def update(probabilities, one_gene, two_genes, have_trait, p):
         probabilities[person]["gene"][person_genes] += p
         probabilities[person]["trait"][person_trait] += p
 
-
 def normalize(probabilities):
     """
     Update `probabilities` such that each probability distribution
     is normalized (i.e., sums to 1, with relative proportions the same).
     """
     for person in probabilities:
-        gene_total = 0
-        for number in probabilities[person]["gene"]:
-            gene_total += probabilities[person]["gene"][number]
-        
-        gene_multiplier = 1 / gene_total
-        for number in probabilities[person]["gene"]:
-            probabilities[person]["gene"][number] *= gene_multiplier
-        
-        trait_total = 0
-        for number in probabilities[person]["trait"]:
-            trait_total += probabilities[person]["trait"][number]
+        options = ["gene", "trait"]
 
-        trait_multiplier = 1 / trait_total
-        for number in probabilities[person]["trait"]:
-            probabilities[person]["trait"][number] *= trait_multiplier
-
+        for option in options:
+            numbers = probabilities[person][option]
+            total = sum(numbers.values())
+            
+            multiplier = 1 / total
+            for number in numbers:
+                numbers[number] *= multiplier
+            
 
 if __name__ == "__main__":
     main()
