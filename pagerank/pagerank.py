@@ -57,8 +57,24 @@ def transition_model(corpus, page, damping_factor):
     linked to by `page`. With probability `1 - damping_factor`, choose
     a link at random chosen from all pages in the corpus.
     """
-    raise NotImplementedError
+    output = {}
+    for key in corpus:
+        output[key] = 0
+    corpus_size = len(corpus)
+    
+    if corpus[page] == None:
+        for key in corpus:
+            output[key] = 1/ corpus_size
+    
+    else:
+        for key in corpus:
+            output[key] =  (1-damping_factor) / corpus_size
 
+        num_links = len(corpus[page])
+        for key1 in corpus[page]:
+            output[key1] += damping_factor / num_links
+
+    return output
 
 def sample_pagerank(corpus, damping_factor, n):
     """
@@ -69,7 +85,32 @@ def sample_pagerank(corpus, damping_factor, n):
     their estimated PageRank value (a value between 0 and 1). All
     PageRank values should sum to 1.
     """
-    raise NotImplementedError
+
+    sample = random.choice(list(corpus.keys()))
+    output = {}
+    for key in corpus:
+        output[key] = 0
+    counter = 0
+
+    while counter < n :
+        counter +=1
+        output[sample] += 1
+        sample_probs = transition_model(corpus, sample, damping_factor)
+        sample = random.choices(list(sample_probs.keys()), weights=list(sample_probs.values()), k=1)[0]
+    
+    total = sum(output.values())
+    for key in output:
+        output[key] = output[key] / total
+            
+    return output
+        
+    # generate dictionary with pages as keys and count up per occurence
+    # initiate sample
+    # while number < n count up
+    # generate next sample
+
+    # at the end, in the output dictionary, divide each value by n and return
+    
 
 
 def iterate_pagerank(corpus, damping_factor):
@@ -81,8 +122,47 @@ def iterate_pagerank(corpus, damping_factor):
     their estimated PageRank value (a value between 0 and 1). All
     PageRank values should sum to 1.
     """
-    raise NotImplementedError
+    corpus_size = len(corpus)
+    output = {}
+    new_output= {}
+    
+    for key in corpus:
+        output[key] = 1/corpus_size
+    
+    new_output = output
 
+    constant = (1-damping_factor) / corpus_size
+
+    while True:
+        for p in output:
+            link_follow_prob = 0
+            for i in output:
+                if p in corpus[i]:
+                    link_follow_prob += output[i] / len(corpus[i])
+                elif not corpus[i]:
+                    link_follow_prob += 1 / corpus_size
+
+            pr_p = constant + link_follow_prob
+            new_output[p] = pr_p
+        
+        if get_difference(output, new_output)<0.001:
+            break
+
+        output = new_output
+    
+    total = sum(new_output.values())
+    for key in new_output:
+        new_output[key] = new_output[key] / total
+    return new_output
+        
+        
+def get_difference(output, new_output):
+    differencedict = {key: output[key]-new_output[key] for key in output if key in new_output}
+    max_difference = 0
+    for key in differencedict:
+        if differencedict[key] > max_difference:
+            max_difference = differencedict[key]
+    return max_difference
 
 if __name__ == "__main__":
     main()
