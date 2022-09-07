@@ -58,21 +58,17 @@ def transition_model(corpus, page, damping_factor):
     a link at random chosen from all pages in the corpus.
     """
     output = {}
-    for key in corpus:
-        output[key] = 0
     corpus_size = len(corpus)
     
     if corpus[page] == None:
-        for key in corpus:
-            output[key] = 1/ corpus_size
-    
+        output = {current_page: 1/corpus_size for current_page in corpus}
+
     else:
-        for key in corpus:
-            output[key] =  (1-damping_factor) / corpus_size
+        output = {current_page: (1-damping_factor) / corpus_size for current_page in corpus }
 
         num_links = len(corpus[page])
-        for key1 in corpus[page]:
-            output[key1] += damping_factor / num_links
+        for key in corpus[page]:
+            output[key] += damping_factor/num_links
 
     return output
 
@@ -98,10 +94,8 @@ def sample_pagerank(corpus, damping_factor, n):
         sample_probs = transition_model(corpus, sample, damping_factor)
         sample = random.choices(list(sample_probs.keys()), weights=list(sample_probs.values()), k=1)[0]
     
-    total = sum(output.values())
-    for key in output:
-        output[key] = output[key] / total
-            
+    output = normalize(output)
+                
     return output
         
     # generate dictionary with pages as keys and count up per occurence
@@ -111,7 +105,9 @@ def sample_pagerank(corpus, damping_factor, n):
 
     # at the end, in the output dictionary, divide each value by n and return
     
-
+def normalize(output):
+    total = sum(output.values())
+    return {key: output[key]/total for key in output}
 
 def iterate_pagerank(corpus, damping_factor):
     """
@@ -123,29 +119,22 @@ def iterate_pagerank(corpus, damping_factor):
     PageRank values should sum to 1.
     """
     corpus_size = len(corpus)
-    output = {}
-    new_output= {}
-    
-    for key in corpus:
-        output[key] = 1/corpus_size
-        new_output[key] = 1/corpus_size
+    output = {key: 1/corpus_size for key in corpus}
+    new_output= {key: 1 / corpus_size for key in corpus}
+    p_stochastic = (1-damping_factor) / corpus_size
 
-    constant = (1-damping_factor) / corpus_size
     while True:
-        for p in output:
-            link_follow_prob = 0
-            for i in output:
-                if p in corpus[i]:
-                    link_follow_prob += (output[i] / len(corpus[i]))
-                elif not corpus[i]:
-                    link_follow_prob += 1 / corpus_size
+        for page in output:
+            p_link = 0
+            for linking_page in output:
+                if page in corpus[linking_page]:
+                    p_link += (output[linking_page] / len(corpus[linking_page]))
+                elif not corpus[linking_page]:
+                    p_link += 1 / corpus_size
+                    
+            new_output[page] = p_stochastic + p_link
 
-            pr_p = constant + link_follow_prob
-            new_output[p] = pr_p
-
-        total = sum(new_output.values())
-        for key in new_output:
-            new_output[key] = new_output[key] / total
+        new_output = normalize(new_output)
         
         if get_difference(output, new_output)<0.001:
             break
