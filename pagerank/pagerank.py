@@ -128,31 +128,30 @@ def iterate_pagerank(corpus, damping_factor):
     
     for key in corpus:
         output[key] = 1/corpus_size
-    
-    new_output = output
+        new_output[key] = 1/corpus_size
 
     constant = (1-damping_factor) / corpus_size
-
     while True:
         for p in output:
             link_follow_prob = 0
             for i in output:
                 if p in corpus[i]:
-                    link_follow_prob += output[i] / len(corpus[i])
+                    link_follow_prob += (output[i] / len(corpus[i]))
                 elif not corpus[i]:
                     link_follow_prob += 1 / corpus_size
 
             pr_p = constant + link_follow_prob
             new_output[p] = pr_p
+
+        total = sum(new_output.values())
+        for key in new_output:
+            new_output[key] = new_output[key] / total
         
         if get_difference(output, new_output)<0.001:
             break
 
-        output = new_output
-    
-    total = sum(new_output.values())
-    for key in new_output:
-        new_output[key] = new_output[key] / total
+        output = new_output.copy()
+
     return new_output
         
         
