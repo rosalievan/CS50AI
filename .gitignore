@@ -1,2 +1,6 @@
 traffic/gtsrb/
 venv/
+env/
+Lib/
+Scripts/
+pyvenv.cfg
