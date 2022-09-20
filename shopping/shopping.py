@@ -149,12 +149,9 @@ def evaluate(labels, predictions):
         if labels[i] == 1 and predictions[i] == 1:
             accurately_predicted_positive +=1
         if labels[i] == 0 and predictions[i] == 0:
-            accurately_predicted_positive += 1
+            accurately_predicted_negative += 1
     
     return (accurately_predicted_positive/actual_positive, accurately_predicted_negative / actual_negative)
-
-
-
 
 if __name__ == "__main__":
     main()
