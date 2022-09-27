@@ -1,6 +1,7 @@
 import nltk
 import sys
 
+
 TERMINALS = """
 Adj -> "country" | "dreadful" | "enigmatical" | "little" | "moist" | "red"
 Adv -> "down" | "here" | "never"
@@ -62,7 +63,12 @@ def preprocess(sentence):
     and removing any word that does not contain at least one alphabetic
     character.
     """
-    raise NotImplementedError
+
+    list = nltk.word_tokenize(sentence)
+    finallist = [x.lower() for x in list]
+
+    return finallist
+
 
 
 def np_chunk(tree):
@@ -72,8 +78,14 @@ def np_chunk(tree):
     whose label is "NP" that does not itself contain any other
     noun phrases as subtrees.
     """
-    raise NotImplementedError
+    final_list = []
+    subtrees = tree.leaves
+    for subtree in subtrees:
+        label = subtree.label
+        if label == "NP":
+            final_list.append(subtree)
 
+    return final_list
 
 if __name__ == "__main__":
     main()

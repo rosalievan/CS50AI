@@ -1,4 +1,5 @@
 traffic/gtsrb/
+traffic/gtsrbsmall/
 venv/
 env/
 Lib/
