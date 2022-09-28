@@ -19,8 +19,9 @@ V -> "smiled" | "tell" | "were"
 
 # I had a little moist red paint in the palm of my hand.
 NONTERMINALS = """
-S -> NP VP | NP | NP VP Conj NP VP | NP VP Conj VP NP | NP VP P NP
-NP -> Det NP | N | NP P NP | Det Adj N | Det Adj Adj Adj NP
+S -> SP | SP Conj SP | SP P SP
+SP -> NP VP | VP NP | NP
+NP -> N | Det N | Det Adj Adj Adj N | Adj N
 VP -> V NP | V | V P NP | Adv VP | VP Adv
 """
 
