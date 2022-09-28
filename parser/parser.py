@@ -2,6 +2,8 @@ import nltk
 import sys
 
 
+
+
 TERMINALS = """
 Adj -> "country" | "dreadful" | "enigmatical" | "little" | "moist" | "red"
 Adv -> "down" | "here" | "never"
@@ -15,8 +17,11 @@ V -> "arrived" | "came" | "chuckled" | "had" | "lit" | "said" | "sat"
 V -> "smiled" | "tell" | "were"
 """
 
+# I had a little moist red paint in the palm of my hand.
 NONTERMINALS = """
-S -> N V
+S -> NP VP | NP | NP VP Conj NP VP | NP VP Conj VP NP | NP VP P NP
+NP -> Det NP | N | NP P NP | Det Adj N | Det Adj Adj Adj NP
+VP -> V NP | V | V P NP | Adv VP | VP Adv
 """
 
 grammar = nltk.CFG.fromstring(NONTERMINALS + TERMINALS)
@@ -79,9 +84,9 @@ def np_chunk(tree):
     noun phrases as subtrees.
     """
     final_list = []
-    subtrees = tree.leaves
+    subtrees = tree.subtrees()
     for subtree in subtrees:
-        label = subtree.label
+        label = subtree.label()
         if label == "NP":
             final_list.append(subtree)
 
