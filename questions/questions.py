@@ -92,9 +92,9 @@ def compute_idfs(documents):
     return_dict = {}
 
     for document in documents:
-        word_list.append(list(set(documents[document])))
-    
-    counter = Counter(word_list[0])
+        word_list.extend(list(set(documents[document])))
+
+    counter = Counter(word_list)
 
     for word in counter:
         return_dict[word] = math.log(len(documents)) / counter[word]
@@ -114,12 +114,18 @@ def top_files(query, files, idfs, n):
     for file in files:
         total_score = 0
         for word in query:
-            total_score += file.count(word)* idfs[word]
+            # print(files[file])
+            total_score += files[file].count(word)* idfs[word]
         score_dict[file] = total_score
-    
-    sorted_list = [k for k in sorted(score_dict.items(), key=lambda item: item[1])]
 
-    return sorted_list[:n]
+    sorted_values = sorted(score_dict.values(), reverse = True) # Sort the values
+    sorted_dict = {}
+
+    for i in sorted_values:
+        for k in score_dict.keys():
+            if score_dict[k] == i:
+                sorted_dict[k] = score_dict[k]
+    return list(sorted_dict.keys())[:n]
 
 def top_sentences(query, sentences, idfs, n):
     """
@@ -133,12 +139,17 @@ def top_sentences(query, sentences, idfs, n):
     for sentence in sentences:
         total_score = 0
         for word in query:
-            total_score += sentence.count(word)* idfs[word]
+            total_score += sentences[sentence].count(word)* idfs[word]
         score_dict[sentence] = total_score
-    
-    sorted_list = [k for k in sorted(score_dict.items(), key=lambda item: item[1])]
 
-    return sorted_list[:n]
+    sorted_values = sorted(score_dict.values(), reverse = True) # Sort the values
+    sorted_dict = {}
+
+    for i in sorted_values:
+        for k in score_dict.keys():
+            if score_dict[k] == i:
+                sorted_dict[k] = score_dict[k]
+    return list(sorted_dict.keys())[:n]
 
 
 if __name__ == "__main__":
